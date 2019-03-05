@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../../js/jquery.ui.widget.js"></script>
+    <script src="../../js/jquery.iframe-transport.js"></script>
+    <script src="../../js/jquery.fileupload.js"></script>
+</head>
+<body>
+
+<!-- PAGE CONTENT BEGINS -->
+<div class="row" th:fragment="applist">
+    <div class="col-xs-12">
+        <table id="simple-table" class="table  table-bordered table-hover">
+            <thead>
+            <tr>
+                <th class="center">应用图标</th>
+                <th class="detail-col">应用详情</th>
+                <th class="center">应用名称</th>
+                <th class="center">应用类型</th>
+                <th class="center">
+                    <i class="ace-icon fa fa-clock-o bigger-110 hidden-480"></i>
+                    创建时间
+                </th>
+                <th class="center">
+                    <i class="ace-icon fa fa-clock-o bigger-110 hidden-480"></i>
+                    更新时间
+                </th>
+                <th class="center">应用状态</th>
+                <th class="center">操作</th>
+            </tr>
+            </thead>
+
+            <tbody th:each="app,iterStat : ${appList}">
+            <tr>
+                <td class="center">
+                    <img class="img-rounded"
+                         th:src="${app.icon}"
+                         width="40px" height="40px"/>
+                </td>
+
+                <td class="center">
+                    <div class="action-buttons">
+                        <a href="#" class="green bigger-140 show-details-btn"
+                           title="Show Details">
+                            <i class="ace-icon fa fa-angle-double-down"></i>
+                            <span class="sr-only">应用详情</span>
+                        </a>
+                    </div>
+                </td>
+
+                <td class="center" th:text="${app.appName}"></td>
+                <td class="center" th:text="${app.os} == 0 ?'Android' : 'IOS'"></td>
+                <td class="center" th:text="${#dates.format(app.createTime, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                <td class="center" th:text="${#dates.format(app.updateTime, 'yyyy-MM-dd HH:mm:ss')}"></td>
+
+                <td class="center">
+                    <!--如果为空值则为新应用-->
+                    <span th:unless="${app.lastUpgradeInfo}" class="label label-sm label-danger">待上传</span>
+
+                    <span th:if="${app.lastUpgradeInfo}"
+                          th:class="${app.lastUpgradeInfo?.status} ? 'label label-sm label-success' : 'label label-sm label-warning'"
+                          th:text="${app.lastUpgradeInfo?.status} ? '已上线' : '审核中'"></span>
+                </td>
+
+                <td class="center">
+                    <div class="hidden-sm hidden-xs btn-group">
+                        <!--发布升级-->
+                        <button class="btn btn-xs btn-success" data-toggle="modal" data-target="#app-upload-modal"
+                                th:data-whatever="${iterStat.index}">
+                            <i class="ace-icon fa fa-upload bigger-120"></i>
+                        </button>
+                        <!--修改-->
+                        <button class="btn btn-xs btn-info" data-toggle="modal" data-target="#app-edit-modal"
+                                th:data-whatever="${iterStat.index}">
+                            <i class="ace-icon fa fa-pencil bigger-120"></i>
+                        </button>
+                        <!--删除-->
+                        <button class="btn btn-xs btn-danger" data-toggle="modal" data-target="#app-delete-modal"
+                                th:data-whatever="${app.id}">
+                            <i class="ace-icon fa fa-trash-o bigger-120"></i>
+                        </button>
+                        <!--更改应用状态-->
+                        <button th:if="${app.lastUpgradeInfo}" class="btn btn-xs btn-warning" data-toggle="modal"
+                                data-target="#app-upgrade-edit-modal"
+                                th:data-whatever="${iterStat.index}">
+                            <i class="ace-icon fa fa-flag bigger-120"></i>
+                        </button>
+                    </div>
+
+                    <div class="hidden-md hidden-lg">
+                        <div class="inline pos-rel">
+                            <button class="btn btn-minier btn-primary dropdown-toggle"
+                                    data-toggle="dropdown" data-position="auto">
+                                <i class="ace-icon fa fa-cog icon-only bigger-110"></i>
+                            </button>
+
+                            <ul class="dropdown-menu dropdown-only-icon dropdown-yellow dropdown-menu-right dropdown-caret dropdown-close">
+                                <li>
+                                    <a href="#app-upload-modal" class="tooltip-info" data-rel="tooltip"
+                                       data-toggle="modal"
+                                       title="升级">
+										<span class="green">
+										    <i class="ace-icon fa fa-search-plus bigger-120"></i>
+										</span>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="#app-edit-modal" class="tooltip-success" data-rel="tooltip"
+                                       data-toggle="modal" title="修改">
+                                        <span class="blue">
+                                            <i class="ace-icon fa fa-pencil-square-o bigger-120"></i>
+                                        </span>
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a href="#app-delete-modal" class="tooltip-error" data-rel="tooltip"
+                                       data-toggle="modal"
+                                       title="删除">
+                                        <span class="red">
+                                            <i class="ace-icon fa fa-trash-o bigger-120"></i>
+                                        </span>
+                                    </a>
+                                </li>
+
+                                <li th:if="${app.lastUpgradeInfo}">
+                                    <a href="#app-upgrade-edit-modal" class="tooltip-warning" data-rel="tooltip"
+                                       data-toggle="modal"
+                                       title="升级策略">
+                                        <span class="orange">
+                                            <i class="ace-icon fa fa-trash-o bigger-120"></i>
+                                        </span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+            <tr class="detail-row">
+                <td colspan="8">
+                    <div class="table-detail">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-2 m-auto">
+                                <div class="text-center">
+                                    <img class="thumbnail inline no-margin-bottom" style="height: 130px; width: 130px;"
+                                         alt="应用图标"
+                                         th:src="${app.icon}"/>
+                                    <br/>
+                                    <div class="width-80 label label-info label-xlg arrowed-in arrowed-in-right">
+                                        <div class="inline position-relative">
+                                            <a class="user-title-label" th:href="${app.lastUpgradeInfo?.resource?.url}">
+                                                <i class="ace-icon fa fa-circle light-green"></i>
+                                                &nbsp;
+                                                <span class="white" th:text="${app.appName}"></span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xs-12 col-sm-10">
+                                <div class="space visible-xs"></div>
+
+                                <div class="profile-user-info profile-user-info-striped">
+                                    <div class="profile-info-row">
+                                        <div class="profile-info-name"> 应用ID</div>
+                                        <div class="profile-info-value">
+                                            <span th:text="${app.id}"></span>
+                                        </div>
+                                    </div>
+                                    <div class="profile-info-row">
+                                        <div class="profile-info-name"> 应用名称</div>
+
+                                        <div class="profile-info-value">
+                                            <span th:text="${app.appName}"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-info-row">
+                                        <div class="profile-info-name"> 应用类型</div>
+
+                                        <div class="profile-info-value">
+                                            <i th:class="${app.os} == 0 ? 'fa fa-android light-orange bigger-110' : 'fa fa-apple light-orange bigger-110'"></i>
+                                            <span th:text="${app.os} == 0 ? 'Android' : 'IOS'"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-info-row">
+                                        <div class="profile-info-name"> 应用包名</div>
+                                        <div class="profile-info-value">
+                                            <span th:text="${app.packageName}"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-info-row">
+                                        <div class="profile-info-name"> 创建时间</div>
+                                        <div class="profile-info-value">
+                                            <span th:text="${#dates.format(app.createTime, 'yyyy-MM-dd HH:mm:ss')}"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-info-row">
+                                        <div class="profile-info-name"> 更新时间</div>
+
+                                        <div class="profile-info-value">
+                                            <span th:text="${#dates.format(app.updateTime, 'yyyy-MM-dd HH:mm:ss')}"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-info-row">
+                                        <div class="profile-info-name"> 创建人</div>
+                                        <div class="profile-info-value">
+                                            <span th:text="${app.createUid}"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-info-row" th:if="${app.lastUpgradeInfo}">
+                                        <div class="profile-info-name"> 最新版本</div>
+                                        <div class="profile-info-value">
+                                            <span th:text="${app.lastUpgradeInfo?.versionName}"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-info-row" th:if="${app.lastUpgradeInfo}">
+                                        <div class="profile-info-name"> 版本编号</div>
+                                        <div class="profile-info-value">
+                                            <span th:text="${app.lastUpgradeInfo?.versionCode}"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-info-row" th:if="${app.lastUpgradeInfo}">
+                                        <div class="profile-info-name"> 文件大小</div>
+                                        <div class="profile-info-value">
+                                            <span th:text="${(app.lastUpgradeInfo.resource?.size/1024.0/1024.0) < 1 ? #numbers.formatDecimal(app.lastUpgradeInfo.resource?.size/1024.0,0,2)+'KB' : #numbers.formatDecimal(app.lastUpgradeInfo.resource?.size/1024.0/1024.0,0,2)+'MB'}"></span>
+                                        </div>
+                                    </div>
+                                    <div class="profile-info-row" th:if="${app.lastUpgradeInfo}">
+                                        <div class="profile-info-name"> 文件MD5</div>
+                                        <div class="profile-info-value">
+                                            <span th:text="${app.lastUpgradeInfo?.resource?.md5}"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-info-row" th:if="${app.website}">
+                                        <div class="profile-info-name"> 官网下载</div>
+                                        <div class="profile-info-value">
+                                            <a th:if="${app.website}"
+                                               th:href="${app.website}">下载</a>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-info-row" th:if="${app.lastUpgradeInfo}">
+                                        <div class="profile-info-name"> 下载地址</div>
+                                        <div class="profile-info-value">
+                                            <a th:if="${app.lastUpgradeInfo}"
+                                               th:href="${app.lastUpgradeInfo?.resource?.url}">下载</a>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-info-row" th:if="${app.lastUpgradeInfo}">
+                                        <div class="profile-info-name"> 更新日志</div>
+                                        <div class="profile-info-value">
+                                            <span th:text="${app.lastUpgradeInfo?.changeLog}"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-info-row">
+                                        <div class="profile-info-name"> 一句话介绍</div>
+                                        <div class="profile-info-value">
+                                            <span th:text="${app.logline}"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="profile-info-row">
+                                        <div class="profile-info-name"> 应用简介</div>
+                                        <div class="profile-info-value">
+                                            <span th:text="${app.description}"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div><!-- /.span -->
+</div><!-- /.row -->
+
+<!-- 应用修改框 -->
+<div class="modal fade" id="app-edit-modal" tabindex="-1" role="dialog" aria-labelledby="app-edit-modal-label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="app-edit-modal-label">应用修改</h4>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <!-- PAGE CONTENT BEGINS -->
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-edit-icon">
+                                    应用图标 </label>
+                                <div class="col-sm-6">
+                                    <div>
+                                        <!--文件选择框-->
+                                        <input id="app-edit-file-upload" type="file" name="file"
+                                               accept=".jpg,.png,.jpeg"
+                                               style="display: none;">
+                                        <!--用于存储OSS Path-->
+                                        <input id="app-edit-icon" type="text" name="icon" style="display: none;">
+                                        <!--预览图-->
+                                        <img class="img-rounded img-responsive" id="app-edit-icon-thumbnail"
+                                             style="width: 80px; height: 80px;"
+                                             src="../../images/add_pic.png" alt="应用图标200*200"/>
+                                        <div class="caption">
+                                            <p id="app-edit-progress">点击图标更换</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-edit-name">
+                                    应用名称 </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-edit-name" placeholder="请输入应用名称" name="appName"
+                                           class="col-xs-10 col-sm-9"
+                                           required="required" maxlength="10"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-edit-id"> APP
+                                    ID </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-edit-id" name="id" class="col-xs-10 col-sm-9"
+                                           readonly="readonly"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-edit-package">
+                                    应用包名 </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-edit-package" name="id" class="col-xs-10 col-sm-9"
+                                           readonly="readonly"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-edit-package">
+                                    官网下载 </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-edit-website" name="id" class="col-xs-10 col-sm-9"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-edit-logline">
+                                    一句话描述 </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-edit-logline" placeholder="一句话描述应用20字以内" name="logline"
+                                           class="col-xs-10 col-sm-9"
+                                           required="required" maxlength="20"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-edit-desc">
+                                    应用简介 </label>
+                                <div class="col-sm-9">
+                                    <textarea class="autosize-transition col-xs-10 col-sm-9" id="app-edit-desc"
+                                              placeholder="请输入应用简介500字以内" name="description" maxlength="500"
+                                              rows="3"
+                                              style="resize: vertical;"
+                                              required="required"></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-app-edit-cancel" type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button id="btn-app-edit-confirm" type="button" class="btn btn-primary">修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 应用升级框 -->
+<div class="modal fade" id="app-upload-modal" tabindex="-1" role="dialog" aria-labelledby="app-upload-modal-label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="app-upload-modal-label">发布升级</h4>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <!-- PAGE CONTENT BEGINS -->
+                        <form id="app-upload-form" class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-edit-icon">
+                                    应用文件 </label>
+                                <div class="col-sm-9">
+                                    <div>
+                                        <!--用于存储OSS Path-->
+                                        <input id="app-upload-resource-id" type="text" name="resourceId"
+                                               style="display: none;">
+                                        <!--选择文件-->
+                                        <label class="col-xs-7 col-sm-6 no-padding">
+                                            <input type="file" id="app-upload-file" accept=".apk,.ipa">
+                                        </label>
+                                        <label class="col-sm-3 control-label align-left">
+                                            <span id="app-file-upload-status"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upload-name">
+                                    应用名称 </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-upload-name" placeholder="" name="appName"
+                                           class="col-xs-10 col-sm-9" readonly="readonly"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upload-id"> APP
+                                    ID </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-upload-id" name="id" class="col-xs-10 col-sm-9"
+                                           readonly="readonly"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upload-package">
+                                    应用包名 </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-upload-package" name="packageName"
+                                           class="col-xs-10 col-sm-9"
+                                           readonly="readonly"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upload-version-name">
+                                    版本名 </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-upload-version-name" name="id" class="col-xs-10 col-sm-9"
+                                           readonly="readonly"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upload-version-code">
+                                    版本号 </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-upload-version-code" name="id" class="col-xs-10 col-sm-9"
+                                           readonly="readonly"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upload-status">
+                                    应用状态 </label>
+                                <div class="col-sm-6 radio-inline no-padding">
+                                    <div class="radio radio-inline no-padding-left" id="app-upload-status">
+                                        <label>
+                                            <input name="status" type="radio" value="0"
+                                                   class="ace" checked="checked"/>
+                                            <span class="lbl"> 待审核</span>
+                                        </label>
+                                    </div>
+                                    <div class="radio radio-inline no-padding-left">
+                                        <label>
+                                            <input name="status" type="radio" value="1" class="ace"/>
+                                            <span class="lbl"> 已上线</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right"
+                                       for="app-upload-upgrade-check-period">
+                                    更新频率 </label>
+                                <div class="col-sm-6 radio-inline no-padding">
+                                    <div class="radio radio-inline no-padding-left"
+                                         id="app-upload-upgrade-check-period">
+                                        <label>
+                                            <input name="upgradeCheckPeriod" type="radio" value="0"
+                                                   class="ace" checked="checked"/>
+                                            <span class="lbl"> 每次启动检查</span>
+                                        </label>
+                                    </div>
+                                    <div class="radio radio-inline no-padding-left">
+                                        <label>
+                                            <input name="upgradeCheckPeriod" type="radio" value="1" class="ace"/>
+                                            <span class="lbl"> 一天检查一次</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upload-is-force">
+                                    强制更新 </label>
+                                <div class="col-sm-9">
+                                    <label>
+                                        <input id="app-upload-is-force" name="upgradeIsForce"
+                                               class="ace ace-switch ace-switch-5"
+                                               type="checkbox"/>
+                                        <span class="lbl"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upload-is-silent">
+                                    静默下载 </label>
+                                <div class="col-sm-9">
+                                    <label>
+                                        <input id="app-upload-is-silent" name="upgradeIsSilent"
+                                               class="ace ace-switch ace-switch-5"
+                                               type="checkbox"/>
+                                        <span class="lbl"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upload-title">
+                                    更新标题 </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-upload-title" placeholder="该内容将在App弹窗中显示" name="title"
+                                           class="col-xs-10 col-sm-9"
+                                           required="required" maxlength="20"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upload-change-log">
+                                    更新日志 </label>
+                                <div class="col-sm-9">
+                                    <textarea class="autosize-transition col-xs-10 col-sm-9" id="app-upload-change-log"
+                                              placeholder="请输入更新日志" name="changeLog" maxlength="200"
+                                              rows="3"
+                                              style="resize: vertical;"
+                                              required="required"></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-app-upload-cancel" type="button" class="btn btn-default" data-dismiss="modal">取消
+                </button>
+                <button id="btn-app-upload-confirm" type="button" class="btn btn-primary">发布</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--删除确认框-->
+<div class="modal fade bs-example-modal-sm" id="app-delete-modal" tabindex="-1" role="dialog"
+     aria-labelledby="app-delete-modal-label">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="app-delete-modal-label">删除警告</h4>
+            </div>
+
+            <div class="modal-body">
+                应用删除后不可恢复，确认删除？
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button id="btn-app-delete" type="button" class="btn btn-primary">删除</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 升级策略修改 -->
+<div class="modal fade" id="app-upgrade-edit-modal" tabindex="-1" role="dialog"
+     aria-labelledby="app-upgrade-edit-modal-label">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="app-upgrade-edit-modal-label">升级策略修改</h4>
+            </div>
+
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-xs-12">
+                        <!-- PAGE CONTENT BEGINS -->
+                        <form id="app-upgrade-edit-form" class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upload-name">
+                                    应用名称 </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-upgrade-edit-name" placeholder="" name="appName"
+                                           class="col-xs-10 col-sm-9" readonly="readonly"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upload-id"> APP
+                                    ID </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-upgrade-edit-id" name="id" class="col-xs-10 col-sm-9"
+                                           readonly="readonly"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upgrade-edit-package">
+                                    应用包名 </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-upgrade-edit-package" name="packageName"
+                                           class="col-xs-10 col-sm-9"
+                                           readonly="readonly"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right"
+                                       for="app-upgrade-edit-version-name">
+                                    版本名 </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-upgrade-edit-version-name" name="id"
+                                           class="col-xs-10 col-sm-9"
+                                           readonly="readonly"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right"
+                                       for="app-upgrade-edit-version-code">
+                                    版本号 </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-upgrade-edit-version-code" name="id"
+                                           class="col-xs-10 col-sm-9"
+                                           readonly="readonly"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upgrade-edit-status">
+                                    应用状态 </label>
+                                <div class="col-sm-6 radio-inline no-padding">
+                                    <div class="radio radio-inline no-padding-left" id="app-upgrade-edit-status">
+                                        <label>
+                                            <input name="appUpgradeEditStatus" type="radio" value="0"
+                                                   class="ace" checked="checked"/>
+                                            <span class="lbl"> 待审核</span>
+                                        </label>
+                                    </div>
+                                    <div class="radio radio-inline no-padding-left">
+                                        <label>
+                                            <input name="appUpgradeEditStatus" type="radio" value="1" class="ace"/>
+                                            <span class="lbl"> 已上线</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right"
+                                       for="app-upgrade-edit-check-period">
+                                    更新频率 </label>
+                                <div class="col-sm-6 radio-inline no-padding">
+                                    <div class="radio radio-inline no-padding-left"
+                                         id="app-upgrade-edit-check-period">
+                                        <label>
+                                            <input name="appUpgradeCheckPeriod" type="radio" value="0"
+                                                   class="ace" checked="checked"/>
+                                            <span class="lbl"> 每次启动检查</span>
+                                        </label>
+                                    </div>
+                                    <div class="radio radio-inline no-padding-left">
+                                        <label>
+                                            <input name="appUpgradeCheckPeriod" type="radio" value="1" class="ace"/>
+                                            <span class="lbl"> 一天检查一次</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upgrade-edit-is-force">
+                                    强制更新 </label>
+                                <div class="col-sm-9">
+                                    <label>
+                                        <input id="app-upgrade-edit-is-force" name="appUpgradeIsForce"
+                                               class="ace ace-switch ace-switch-5"
+                                               type="checkbox"/>
+                                        <span class="lbl"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upgrade-edit-is-silent">
+                                    静默下载 </label>
+                                <div class="col-sm-9">
+                                    <label>
+                                        <input id="app-upgrade-edit-is-silent" name="appUpgradeIsSilent"
+                                               class="ace ace-switch ace-switch-5"
+                                               type="checkbox"/>
+                                        <span class="lbl"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right" for="app-upgrade-edit-title">
+                                    更新标题 </label>
+                                <div class="col-sm-9">
+                                    <input type="text" id="app-upgrade-edit-title" placeholder="该内容将在App弹窗中显示"
+                                           name="title"
+                                           class="col-xs-10 col-sm-9"
+                                           required="required" maxlength="20"/>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label no-padding-right"
+                                       for="app-upgrade-edit-change-log">
+                                    更新日志 </label>
+                                <div class="col-sm-9">
+                                    <textarea class="autosize-transition col-xs-10 col-sm-9"
+                                              id="app-upgrade-edit-change-log"
+                                              placeholder="请输入更新日志" name="changeLog" maxlength="200"
+                                              rows="3"
+                                              style="resize: vertical;"
+                                              required="required"></textarea>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-app-upgrade-edit-cancel" type="button" class="btn btn-default" data-dismiss="modal">取消
+                </button>
+                <button id="btn-app-upgrade-edit-confirm" type="button" class="btn btn-primary">修改</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- PAGE CONTENT ENDS -->
+<script th:inline="javascript">
+    $('.show-details-btn').on('click', function (e) {
+        e.preventDefault();
+        $(this).closest('tr').next().toggleClass('open');
+        $(this).find(ace.vars['.icon']).toggleClass('fa-angle-double-down').toggleClass('fa-angle-double-up');
+    });
+
+    //模态框代码关闭后导致页面后侧增加padding，且无法滑动
+    $('.modal').on('hide.bs.modal', function () {
+        $('body').removeClass('modal-open');
+        $('body').css('padding-right', '0px');
+    });
+
+    /**
+     * 刷新
+     */
+    function refresh() {
+        $('#app-delete-modal').modal('hide');
+        $('.modal-backdrop').remove();
+        fetchTabContentPage('/app/allApp', $("#tab-content-home"));
+    }
+
+    //应用修改模态框打开后回显应用数据
+    $('#app-edit-modal').on('show.bs.modal', function (event) {
+        let button = $(event.relatedTarget);
+        let index = button.data('whatever');
+        let appList = [[${appList}]];
+        let app = appList[index];
+        let modal = $(this);
+        modal.find('#app-edit-icon').val(app.icon);
+        modal.find('#app-edit-icon-thumbnail').attr('src', app.icon);
+        modal.find('#app-edit-id').val(app.id);
+        modal.find('#app-edit-name').val(app.appName);
+        modal.find('#app-edit-website').val(app.website);
+        modal.find('#app-edit-package').val(app.packageName);
+        modal.find('#app-edit-logline').val(app.logline);
+        modal.find('#app-edit-desc').val(app.description);
+    });
+
+    //上传图标
+    $(function () {
+        'use strict';
+        $('#app-edit-file-upload').fileupload({
+            url: '/app/upload',
+            dataType: 'json',
+            singleFileUploads: true,
+            acceptFileTypes: '/(\.|\/)(gif|jpe?g|png)$/i',
+            previewMaxWidth: 200,
+            previewMaxHeight: 200,
+            previewCrop: true
+        }).on('fileuploadadd', function (e, data) {
+            //图片选中后设置进度提示以及默认loading图
+            $("#app-edit-progress").html('图片上传中...').css('color', 'black');
+            $("#app-edit-icon-thumbnail").attr('src', '../../images/loading.svg')
+        }).on('fileuploadprogressall', function (e, data) {
+            //上传进度
+            let progress = parseInt(data.loaded / data.total * 100, 10);
+            console.log("上传进度：" + progress + '%');
+            // $("#progress-value").attr('data-percent', progress + '%');
+            // $("#progress").css('width', progress + '%');
+        }).on('fileuploaddone', function (e, data) {
+            //上传成功回显OSS图URL
+            console.log("上传成功：" + data.result);
+            let imageUrl = data.result.data.image;
+            $('#app-edit-icon-thumbnail').attr('src', imageUrl);
+            $('#app-edit-icon').val(imageUrl);
+            $("#app-edit-progress").html('上传成功！').css('color', 'green');
+        }).on('fileuploadfail', function (e, data) {
+            //上传失败
+            $("#app-edit-progress").html('上传失败，请重新选择！').css('color', 'red');
+            $("#app-edit-icon-thumbnail").attr('src', '../../images/add_pic.png');
+        }).prop('disabled', !$.support.fileInput).parent().addClass($.support.fileInput ? undefined : 'disabled');
+    });
+
+    //点击图片按钮重新选择Icon
+    $("#app-edit-icon-thumbnail").click(function () {
+        $("#app-edit-file-upload").click();
+    });
+
+    //修改应用
+    $("#btn-app-edit-confirm").click(function () {
+        let appId = $('#app-edit-id').val();
+        let icon = $('#app-edit-icon').val();
+        let appName = $("#app-edit-name").val();
+        let website = $("#app-edit-website").val();
+        let logline = $("#app-edit-logline").val();
+        let desc = $("#app-edit-desc").val();
+        if (logline == null || desc == null) {
+            showErrorMessage("应用描述及简介不能为空！");
+            return false;
+        }
+        $.ajax({
+            type: "PUT",
+            url: "/app/update",
+            dataType: "json",
+            data: JSON.stringify({
+                id: appId,
+                icon: icon,
+                appName: appName,
+                website: website,
+                logline: logline,
+                description: desc
+            }),
+            contentType: "application/json;charset=utf-8",
+            success: function (data) {
+                refresh();
+                showSuccessMessage("应用修改成功！");
+                console.log("应用修改成功：" + data.result);
+            },
+            error: function (XMLHttpRequest, status) {
+                console.log("修改失败,XMLHttpRequest:" + XMLHttpRequest.toString() + ",status:" + status);
+            }
+        });
+    });
+
+    //删除应用
+    $('#app-delete-modal').on('show.bs.modal', function (event) {
+        let button = $(event.relatedTarget);
+        let appId = button.data('whatever');
+        $('#btn-app-delete').click(function () {
+            $.ajax({
+                type: "DELETE",
+                url: "/app/delete/" + appId,
+                headers: {
+                    "Content-Type": "application/json;charset=utf-8",
+                    "X-HTTP-Method-Override": "DELETE"
+                },
+                contentType: "application/json;charset=utf-8",
+                success: function (data) {
+                    refresh();
+                    showSuccessMessage("应用删除成功！");
+                    console.log("应删除成功：" + data.result);
+                },
+                error(XMLHttpRequest, status) {
+                    console.log("删除失败：" + status);
+                    showErrorMessage("应用删除失败！")
+                }
+            });
+        });
+    });
+
+    // 上传应用
+    function uploadAppFile(file) {
+        $('#app-file-upload-status').html("上传中...").css('color', 'green');
+        let formData = new FormData();
+        formData.append("file", file);
+        let deferred = $.ajax({
+            url: 'app/upload',
+            type: 'POST',
+            processData: false,
+            contentType: false,
+            dataType: 'json',
+            data: formData
+        });
+        deferred.done(function (result) {
+            console.log("文件上传成功:" + result);
+            console.log(result.data);
+            console.log(result.data.versionName);
+            console.log(result.data.versionCode);
+            console.log(result.data.resourceId);
+            let packageName = $('#app-upload-package').val();
+            if (result.data.packageName !== packageName) {
+                showErrorMessage("上传应用与当前修改应用包名不一致！");
+                $('#app-upload-file').val('');
+                $('#app-file-upload-status').html("请重新上传").css('color', 'red');
+                return false;
+            }
+            $('#app-file-upload-status').html("上传成功!").css('color', 'green');
+            $('#app-upload-version-name').val(result.data.versionName);
+            $('#app-upload-version-code').val(result.data.versionCode);
+            $('#app-upload-resource-id').val(result.data.resourceId);
+        }).fail(function (result) {
+            $('#app-file-upload-status').html("上传失败!").css('color', 'red');
+            showErrorMessage("文件上传失败:" + result);
+        });
+    }
+
+    // 升级应用
+    $('#app-upload-file').ace_file_input({
+        no_file: '没有选择文件',
+        btn_choose: '选择',
+        btn_change: '更改',
+        icon_remove: null,// 删除|重置按钮图标
+        droppable: false,// 禁用拖放功能
+        thumbnail: false,// 缩略图
+        allowExt: ['.apk', '.ipa'],// 允许文件扩展名（白名单）
+        //allowMime: ['application/vnd.android.package-archive', 'application/octet-stream.ipa'],//允许MIME（白名单）
+        before_change: function (files, dropped) {
+            $('#app-file-upload-status').val('');
+            // files 文件数组
+            // dropped 文件是否已被删除或选中
+            let file = files[0];
+            //return true ; return false ；
+            if ('File' in window && file instanceof window.File) {
+                //IOS .ipa文件无法获取MIME类型，所以此处不做校验
+                console.log("文件MIME:" + file.type);
+                //需要同步等待返回结果
+                uploadAppFile(file);
+                //保留当前文件
+                return true;
+            } else {
+                //不保留文件
+                return false;
+            }
+        }
+    }).on('file.error.ace', function (event, info) {
+        $('#app-file-upload-status').html("文件格式错误!").css('color', 'red');
+        console.log("文件验证失败..." + event + "," + info);
+        event.preventDefault();
+    });
+
+    // 更新应用
+    $('#app-upload-modal').on('show.bs.modal', function (event) {
+        let button = $(event.relatedTarget);
+        let index = button.data('whatever');
+        let appList = [[${appList}]];
+        let app = appList[index];
+        let modal = $(this);
+        // 数据回显
+        modal.find('#app-upload-id').val(app.id);
+        modal.find('#app-upload-name').val(app.appName);
+        modal.find('#app-upload-package').val(app.packageName);
+        modal.find('#app-upload-title').val(app.appName + "升级");
+        $('#btn-app-upload-confirm').click(function () {
+            let resourceId = $('#app-upload-resource-id').val();
+            let versionName = $('#app-upload-version-name').val();
+            let versionCode = $('#app-upload-version-code').val();
+            let upgradeIsForce = $('#app-upload-is-force').prop("checked");
+            let upgradeIsSilent = $('#app-upload-is-silent').prop("checked");
+            let upgradeCheckPeriod = $('input:radio[name="upgradeCheckPeriod"]:checked').val() === "1";
+            let status = $('input:radio[name="status"]:checked').val() === "1";
+            let title = $('#app-upload-title').val();
+            let changeLog = $('#app-upload-change-log').val();
+            if (resourceId == null || resourceId === "") {
+                showErrorMessage("请上传应用文件！");
+                return false;
+            }
+            let deferred = $.ajax({
+                url: 'appUpgrade/upgrade',
+                type: 'POST',
+                contentType: 'application/json',
+                dataType: 'json',
+                data: JSON.stringify({
+                    appId: app.id,
+                    os: app.os,
+                    resourceId: resourceId,
+                    versionName: versionName,
+                    versionCode: versionCode,
+                    upgradeIsForce: upgradeIsForce,
+                    upgradeIsSilent: upgradeIsSilent,
+                    upgradeCheckPeriod: upgradeCheckPeriod,
+                    status: status,
+                    title: title,
+                    changeLog: changeLog
+                })
+            });
+            deferred.done(function (result) {
+                console.log("更新成功:" + result);
+                showSuccessMessage("应用更新成功！");
+                refresh();
+            }).fail(function (result) {
+                console.log("更新失败：" + result);
+                showErrorMessage("应用更新失败");
+            });
+        });
+    });
+
+    // 修改应用状态
+    $('#app-upgrade-edit-modal').on('show.bs.modal', function (event) {
+        let button = $(event.relatedTarget);
+        let index = button.data('whatever');
+        let appList = [[${appList}]];
+        let app = appList[index];
+        // 回显数据
+        $('#app-upgrade-edit-name').val(app.appName);
+        $('#app-upgrade-edit-id').val(app.id);
+        $('#app-upgrade-edit-package').val(app.packageName);
+        $('#app-upgrade-edit-version-name').val(app.lastUpgradeInfo.versionName);
+        $('#app-upgrade-edit-version-code').val(app.lastUpgradeInfo.versionCode);
+        $('#app-upgrade-edit-status').val(app.versionCode);
+        if (app.lastUpgradeInfo.status) {
+            $('input:radio[name="appUpgradeEditStatus"][value="1"]').attr("checked", true);
+        } else {
+            $('input:radio[name="appUpgradeEditStatus"][value="0"]').attr("checked", true);
+        }
+        if (app.lastUpgradeInfo.upgradeCheckPeriod) {
+            $('input:radio[name="appUpgradeCheckPeriod"][value="1"]').attr("checked", true);
+        } else {
+            $('input:radio[name="appUpgradeCheckPeriod"][value="0"]').attr("checked", true);
+        }
+        $('input:checkbox[name="appUpgradeIsForce"]').attr("checked", app.lastUpgradeInfo.upgradeIsForce);
+        $('input:checkbox[name="appUpgradeIsSilent"]').attr("checked", app.lastUpgradeInfo.upgradeIsSilent);
+        $('#app-upgrade-edit-title').val(app.lastUpgradeInfo.title);
+        $('#app-upgrade-edit-change-log').val(app.lastUpgradeInfo.changeLog);
+        // 修改提交
+        $('#btn-app-upgrade-edit-confirm').click(function () {
+            let id = app.lastUpgradeInfo.id;
+            let status = $('input:radio[name="appUpgradeEditStatus"]:checked').val() === "1";
+            let upgradeCheckPeriod = $('input:radio[name="appUpgradeCheckPeriod"]:checked').val() === "1";
+            let upgradeIsForce = $('#app-upgrade-edit-is-force').prop("checked");
+            let upgradeIsSilent = $('#app-upgrade-edit-is-silent').prop("checked");
+            let title = $('#app-upgrade-edit-title').val();
+            let changeLog = $('#app-upgrade-edit-change-log').val();
+            let deferred = $.ajax({
+                url: 'appUpgrade/statusUpdate',
+                type: 'PUT',
+                contentType: 'application/json',
+                dataType: 'json',
+                data: JSON.stringify({
+                    id: id,
+                    status: status,
+                    os: app.os,
+                    upgradeCheckPeriod: upgradeCheckPeriod,
+                    upgradeIsForce: upgradeIsForce,
+                    upgradeIsSilent: upgradeIsSilent,
+                    title: title,
+                    changeLog: changeLog
+                })
+            });
+            deferred.done(function (result) {
+                console.log("更新成功:" + result);
+                showSuccessMessage("操作成功！");
+                refresh();
+            }).fail(function (result) {
+                console.log("更新失败：" + result);
+                showErrorMessage("操作失败！");
+            });
+        });
+    });
+</script>
+</body>
+</html>

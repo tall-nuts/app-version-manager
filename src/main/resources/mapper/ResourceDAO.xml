@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.imeina.avm.dao.ResourceDAO">
+
+    <!-- 列名与属性名不一致，解决方式 -->
+    <resultMap id="resourceResultMap" type="Resource">
+        <result column="object_key" property="objectKey" javaType="string"/>
+        <result column="mime_type" property="mimeType" javaType="string"/>
+        <result column="create_time" property="createTime" javaType="date"/>
+    </resultMap>
+
+    <!-- 表名 -->
+    <sql id="TABLE_NAME">
+        resource
+    </sql>
+
+    <!-- 列名 -->
+    <sql id="COLUMN_FIELD">
+        id,
+        name,
+        object_key,
+        url,
+        mime_type,
+        size,
+        md5,
+        extension,
+        create_time,
+        description
+    </sql>
+
+    <!-- 字段值 -->
+    <sql id="COLUMN_FIELD_VALUE">
+        #{id},
+        #{name},
+        #{objectKey},
+        #{url},
+        #{mimeType},
+        #{size},
+        #{md5},
+        #{extension},
+        #{createTime},
+        #{description}
+    </sql>
+
+    <select id="selectById" parameterType="string" resultMap="resourceResultMap">
+        SELECT * FROM
+        <include refid="TABLE_NAME"/>
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectAll" resultMap="resourceResultMap">
+        SELECT * FROM
+        <include refid="TABLE_NAME"/>
+    </select>
+
+    <insert id="save" parameterType="Resource">
+        INSERT INTO
+        <include refid="TABLE_NAME"/>
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="name != null">name,</if>
+            <if test="objectKey != null">object_key,</if>
+            <if test="url != null">url,</if>
+            <if test="mimeType != null">mime_type,</if>
+            <if test="size != null">size,</if>
+            <if test="md5 != null">md5,</if>
+            <if test="extension != null">extension,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="description != null">description</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="name != null">#{name},</if>
+            <if test="objectKey != null">#{objectKey},</if>
+            <if test="url != null">#{url},</if>
+            <if test="mimeType != null">#{mimeType},</if>
+            <if test="size != null">#{size},</if>
+            <if test="md5 != null">#{md5},</if>
+            <if test="extension != null">#{extension},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="description != null">#{description}</if>
+        </trim>
+    </insert>
+    <delete id="delete" parameterType="string">
+        DELETE
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE id = #{id};
+    </delete>
+    <!-- 批量删除 -->
+    <delete id="deleteList" parameterType="list">
+        DELETE FROM
+        <include refid="TABLE_NAME"/>
+        WHERE id IN
+        <foreach collection="list" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </delete>
+</mapper>

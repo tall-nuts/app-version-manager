@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.imeina.avm.dao.UserDAO">
+
+    <!-- 列名与属性名不一致，解决方式 -->
+    <resultMap id="userResultMap" type="User">
+        <result column="username" property="userName" javaType="string"/>
+        <result column="nickname" property="nickName" javaType="string"/>
+        <result column="realName" property="realName" javaType="string"/>
+        <result column="create_time" property="createTime" javaType="string"/>
+        <result column="update_time" property="updateTime" javaType="string"/>
+    </resultMap>
+
+    <!-- 表名 -->
+    <sql id="TABLE_NAME">
+        sys_user
+    </sql>
+
+    <!-- 列名 -->
+    <sql id="COLUMN_FIELD">
+        uid,
+        avatar,
+        username,
+        realname,
+        nickname,
+        password,
+        sex,
+        birthday,
+        telephone,
+        email,
+        address,
+        signature,
+        status,
+        create_time,
+        update_time
+    </sql>
+
+    <!-- 字段值 -->
+    <sql id="COLUMN_FIELD_VALUE">
+        #{uid},
+        #{avatar},
+        #{userName},
+        #{realName},
+        #{nickName},
+        #{password},
+        #{sex},
+        #{birthday},
+        #{telephone},
+        #{email},
+        #{address},
+        #{signature},
+        #{status},
+        #{createTime},
+        #{updateTime}
+    </sql>
+
+    <!-- 通过ID获取用户信息 -->
+    <select id="selectById" parameterType="string" resultMap="userResultMap">
+        SELECT
+        <include refid="COLUMN_FIELD"/>
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE uid = #{uid}
+    </select>
+
+    <!-- 获取全部用户信息 -->
+    <select id="selectAll" resultMap="userResultMap">
+        SELECT
+        <include refid="COLUMN_FIELD"/>
+        FROM
+        <include refid="TABLE_NAME"/>
+    </select>
+
+    <!-- 添加用户 -->
+    <insert id="save" parameterType="User">
+        INSERT INTO
+        <include refid="TABLE_NAME"/>
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="uid != null">uid,</if>
+            <if test="avatar != null">avatar,</if>
+            <if test="userName != null">username,</if>
+            <if test="realName != null">realname,</if>
+            <if test="nickName != null">nickname,</if>
+            <if test="password != null">password,</if>
+            <if test="sex != null">sex,</if>
+            <if test="birthday != null">birthday,</if>
+            <if test="telephone != null">telephone,</if>
+            <if test="email != null">email,</if>
+            <if test="address != null">address,</if>
+            <if test="signature != null">signature,</if>
+            <if test="status != null">status,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time</if>
+        </trim>
+        <trim prefix="VALUES (" suffixOverrides="," suffix=")">
+            <if test="uid != null">uid,</if>
+            <if test="avatar != null">avatar,</if>
+            <if test="userName != null">userName,</if>
+            <if test="realName != null">realName,</if>
+            <if test="nickName != null">nickName,</if>
+            <if test="password != null">password,</if>
+            <if test="sex != null">sex,</if>
+            <if test="birthday != null">birthday,</if>
+            <if test="telephone != null">telephone,</if>
+            <if test="email != null">email,</if>
+            <if test="address != null">address,</if>
+            <if test="signature != null">signature,</if>
+            <if test="status != null">status,</if>
+            <if test="createTime != null">createTime,</if>
+            <if test="updateTime != null">updateTime</if>
+        </trim>
+    </insert>
+
+    <!-- 更新用户信息 -->
+    <update id="update" parameterType="User">
+        UPDATE
+        <include refid="TABLE_NAME"/>
+        <set>
+            <if test="avatar != null">avatar = #{avatar}</if>
+            <if test="nickName != null">nickname = #{nickName}</if>
+            <if test="userName != null">avatar = #{userName}</if>
+            <if test="realName != null">avatar = #{realName}</if>
+            <if test="email != null">email = #{email}</if>
+            <if test="sex != null">sex = #{sex}</if>
+            <if test="telephone != null">telephone = #{telephone}</if>
+            <if test="address != null">address = #{address}</if>
+            <if test="birthday != null">birthday = #{birthday}</if>
+            <if test="signature != null">signature = #{signature}</if>
+        </set>
+        WHERE uid = #{uid};
+    </update>
+
+    <!-- 更改密码 -->
+    <update id="updatePwd">
+        UPDATE
+        <include refid="TABLE_NAME"/>
+        SET password = #{1}
+        WHERE uid = #{0}
+    </update>
+
+    <!-- 删除用户 -->
+    <delete id="delete" parameterType="string">
+        DELETE
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE uid = #{uid};
+    </delete>
+
+    <!-- 登录 -->
+    <select id="login" resultMap="userResultMap" parameterType="User">
+        SELECT uid, avatar, nickname, realname, username, email, sex, birthday, address, signature, telephone,
+        create_time,
+        update_time
+        FROM
+        <include refid="TABLE_NAME"/>
+        WHERE username = #{userName}
+        AND password = #{password}
+    </select>
+</mapper>

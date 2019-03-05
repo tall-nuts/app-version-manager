@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>create-app</title>
+    <script src="../../js/jquery.ui.widget.js"></script>
+    <script src="../../js/jquery.iframe-transport.js"></script>
+    <script src="../../js/jquery.fileupload.js"></script>
+</head>
+<body>
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+        <form class="form-horizontal" role="form">
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="app-icon"> 应用图标 </label>
+                <div class="col-sm-6">
+                    <div>
+                        <input id="file-upload" type="file" name="file" accept=".jpg,.png,.jpeg" style="display: none;">
+                        <input id="app-icon" type="text" name="icon" style="display: none;">
+                        <img class="img-rounded img-responsive" id="icon-thumbnail" style="width: 80px; height: 80px;"
+                             src="../../images/add_pic.png" alt="应用图标200*200"/>
+                        <div class="caption">
+                            <p id="progress">建议尺寸为200*200</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="app-os"> 应用类型 </label>
+                <div class="col-sm-6" id="app-os">
+                    <div class="radio radio-inline no-padding-left">
+                        <label>
+                            <input name="os" type="radio" value="0" class="ace" checked="checked"/>
+                            <span class="lbl"> Android</span>
+                        </label>
+                    </div>
+                    <div class="radio radio-inline no-padding-left">
+                        <label>
+                            <input name="os" type="radio" value="1" class="ace"/>
+                            <span class="lbl"> IOS</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="app-name"> 应用名称 </label>
+                <div class="col-sm-6">
+                    <input type="text" id="app-name" placeholder="请输入应用名称" name="appName" class="col-xs-10 col-sm-5"
+                           required="required" maxlength="10"/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="app-package-name"> 应用包名 </label>
+
+                <div class="col-sm-6">
+                    <input type="text" id="app-package-name" placeholder="请输入应用包" name="packageName"
+                           class="col-xs-10 col-sm-5" required="required"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="website"> 官网下载 </label>
+                <div class="col-sm-6">
+                    <input type="text" id="website" placeholder="IOS填写应用AppStore地址(必填)，Android填写官网下载地址（可选）" name="website"
+                           class="form-control col-xs-10 col-sm-5" required="required" maxlength="20"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="logline"> 一句话描述 </label>
+
+                <div class="col-sm-6">
+                    <input type="text" id="logline" placeholder="请输入一句话描述20字以内" name="logline"
+                           class="form-control col-xs-10 col-sm-5" required="required" maxlength="20"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label no-padding-right" for="description"> 应用简介 </label>
+                <div class="col-sm-6">
+                    <textarea class="autosize-transition form-control col-xs-10 col-sm-5" id="description"
+                              placeholder="请输入应用简介500字以内" name="description" maxlength="500"
+                              required="required"></textarea>
+                </div>
+            </div>
+            <div class="space-4"></div>
+        </form>
+        <div class="clearfix form-actions">
+            <div class="col-md-offset-3 col-md-3 no-padding-left">
+                <button id="btn_create_app" class="btn btn-primary btn-block">立即创建</button>
+            </div>
+        </div>
+    </div>
+</div><!-- PAGE CONTENT ENDS -->
+<script>
+    $(function () {
+        'use strict';
+        $('#file-upload').fileupload({
+            url: '/app/upload',
+            dataType: 'json',
+            singleFileUploads: true,
+            acceptFileTypes: '/(\.|\/)(gif|jpe?g|png)$/i',
+            previewMaxWidth: 200,
+            previewMaxHeight: 200,
+            previewCrop: true
+        }).on('fileuploadadd', function (e, data) {
+            //图片选中后设置进度提示以及默认loading图
+            $("#progress").html('图片上传中...').css('color', 'black');
+            $("#icon-thumbnail").attr('src', '../../images/loading.svg')
+        }).on('fileuploadprogressall', function (e, data) {
+            //上传进度
+            let progress = parseInt(data.loaded / data.total * 100, 10);
+            console.log("上传进度：" + progress + '%');
+            // $("#progress-value").attr('data-percent', progress + '%');
+            // $("#progress").css('width', progress + '%');
+        }).on('fileuploaddone', function (e, data) {
+            //上传成功回显OSS图URL
+            console.log("上传成功：" + data.result);
+            let imageUrl = data.result.data.image;
+            $('#icon-thumbnail').attr('src', imageUrl);
+            $('#app-icon').val(imageUrl);
+            $("#progress").html('上传成功！').css('color', 'green');
+        }).on('fileuploadfail', function (e, data) {
+            //上传失败
+            $("#progress").html('上传失败，请重新选择！').css('color', 'red');
+            $("#icon-thumbnail").attr('src', '../../images/add_pic.png');
+        }).prop('disabled', !$.support.fileInput).parent().addClass($.support.fileInput ? undefined : 'disabled');
+    });
+
+    $("#icon-thumbnail").click(function () {
+        $("#file-upload").click();
+    });
+
+    //创建应用
+    $("#btn_create_app").click(function () {
+        let icon = $('#app-icon').val();
+        let os = $('input:radio[name="os"]:checked').val();
+        let packageName = $('#app-package-name').val();
+        let appName = $("#app-name").val();
+        let website = $("#website").val();
+        let logline = $("#logline").val();
+        let desc = $("#description").val();
+        if (icon == null || icon === "" || os == null || os === ""
+            || appName == null || appName === "" || packageName == null || packageName === ""
+            || logline == null || logline === "" || desc == null || desc === "" || (os === "1" && website === "")) {
+            showErrorMessage("请填写完整信息");
+            return false;
+        }
+        $.ajax({
+            url: '/app/create',
+            type: 'POST',
+            dataType: 'json',
+            data: JSON.stringify({
+                icon: icon,
+                os: os,
+                website: website,
+                packageName: packageName,
+                appName: appName,
+                logline: logline,
+                description: desc
+            }),
+            contentType: 'application/json;charset=utf-8',
+            success: function (result) {
+                debugger;
+                if (result.code === "000000") {
+                    showSuccessMessage("应用创建成功！");
+                    refresh();
+                } else {
+                    showErrorMessage(result.message);
+                }
+            },
+            error: function () {
+                debugger;
+                showErrorMessage("服务器异常，请稍后再试！")
+            }
+        });
+    });
+</script>
+</body>
+</html>

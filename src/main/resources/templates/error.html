@@ -1,0 +1,55 @@
+<!--
+Author: W3layouts
+Author URL: http://w3layouts.com
+License: Creative Commons Attribution 3.0 Unported
+License URL: http://creativecommons.org/licenses/by/3.0/
+-->
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<title th:text="${status}"></title>
+<!-- for-mobile-apps -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false);
+		function hideURLbar(){ window.scrollTo(0,1); } </script>
+<!-- //for-mobile-apps -->
+<link href="../css/style.css" rel="stylesheet" type="text/css" media="all" />
+<!-- font-awesome icons -->
+<link href="../css/font-awesome.css" rel="stylesheet" type="text/css" media="all" />
+<!-- //font-awesome icons -->
+<link href="//fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
+<link href="//fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+</head>
+<body>
+	<div class="main">
+		<h1>抱歉！出错了...</h1>
+
+		<div class="w3layouts_main_grids">
+			<div class="w3_main_grid_left">
+				<div class="w3l_main_grid">
+					<h2 th:text="${status}"></h2>
+				</div>
+				<h3 th:text="${error}"></h3>
+			</div>
+			<div class="w3_main_grid_right w3_agileits_grid_right">
+				<h3>HTTP常见错误码对应信息：</h3>
+				<p>
+					<ul>
+						<li>HTTP 400 - 错误的请求</li>
+						<li>HTTP 401 - 未授权：登录失败（访问被拒绝）</li>
+						<li>HTTP 403 - 禁止访问</li>
+						<li>HTTP 404 - 无法找到资源</li>
+						<li>HTTP 405 - 请求方式错误</li>
+						<li>HTTP 500 - 内部服务器错误</li>
+					</ul>
+				</p>
+			</div>
+			<div class="clear"> </div>
+		</div>
+		<div class="agileits_copyright">
+			<p> © 2019 AKid. All Rights Reserved
+		</div>
+	</div>
+</body>
+</html>
