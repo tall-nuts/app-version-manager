@@ -25,17 +25,17 @@
 
 管理员登录-->【应用管理】-->【创建应用】-->【上传应用】
 
-![登录](http://images.imeina.cn/images/login.png)
+![登录](https://github.com/pengfeigao/app-version-manager/blob/master/screencapture/login.png)
 
-![创建应用](http://images.imeina.cn/images/create-app.png)
+![创建应用](https://github.com/pengfeigao/app-version-manager/blob/master/screencapture/create-app.png)
 
-![应用列表](http://images.imeina.cn/images/app-list.png)
+![应用列表](https://github.com/pengfeigao/app-version-manager/blob/master/screencapture/app-list.pnghttp://images.imeina.cn/images/app-list.png)
 
-![上传文件](http://images.imeina.cn/images/upload-app.png)
+![上传文件](https://github.com/pengfeigao/app-version-manager/blob/master/screencapture/upload-app.png)
 
-![404](http://images.imeina.cn/images/404.png)
+![404](https://github.com/pengfeigao/app-version-manager/blob/master/screencapture/404.png)
 
-![405](http://images.imeina.cn/images/405.png)
+![405](https://github.com/pengfeigao/app-version-manager/blob/master/screencapture/405.png)
 
 ***
 
