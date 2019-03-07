@@ -29,7 +29,7 @@
 
 ![创建应用](https://github.com/pengfeigao/app-version-manager/blob/master/screencapture/create-app.png)
 
-![应用列表](https://github.com/pengfeigao/app-version-manager/blob/master/screencapture/app-list.pnghttp://images.imeina.cn/images/app-list.png)
+![应用列表](https://github.com/pengfeigao/app-version-manager/blob/master/screencapture/app-list.png)
 
 ![上传文件](https://github.com/pengfeigao/app-version-manager/blob/master/screencapture/upload-app.png)
 
