@@ -88,7 +88,7 @@
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
-            <version>4.3.1</version>
+            <version>5.8.21</version>
         </dependency>
         <!-- Mybatis分页器 -->
         <!--<dependency>-->
